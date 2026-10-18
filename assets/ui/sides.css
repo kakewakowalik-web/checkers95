@@ -1,0 +1,73 @@
+/* Checkers95 side / turn indicator  -  everything is prefixed c95s-  (no global rules) */
+.c95s-side{width:188px;display:flex;flex-direction:column;gap:10px;font:11px/1.25 "MS Sans Serif","Microsoft Sans Serif",Tahoma,Arial,sans-serif;color:#000;flex:none}
+.c95s-side *{box-sizing:border-box}
+.c95s-panel{position:relative;background:#c0c0c0;border:2px groove #fff;padding:0 0 7px}
+.c95s-tb{display:flex;align-items:center;gap:3px;height:18px;padding:0 4px 0 2px;font-weight:bold;color:#c0c0c0;background:#808080;white-space:nowrap;overflow:hidden}
+.c95s-tb .c95s-st{margin-left:auto;font-weight:normal}
+.c95s-arrow{width:16px;height:16px;flex:none;image-rendering:pixelated;background:url(turn_arrow_right_sheet.png) 0 0/64px 16px;visibility:hidden}
+.c95s-glass{width:16px;height:16px;flex:none;image-rendering:pixelated;background:url(../icons/hourglass.png) center/16px no-repeat;display:none}
+.c95s-body{display:flex;gap:8px;align-items:center;padding:8px 8px 0}
+.c95s-icon{width:48px;height:48px;flex:none;image-rendering:pixelated;background:center/48px no-repeat}
+.c95s-name{font-weight:bold;font-size:14px;line-height:1.1}
+.c95s-sub{margin-top:3px}
+.c95s-capl{margin:7px 8px 2px}
+.c95s-caps{margin:0 8px;height:22px;padding:2px 4px 2px 10px;background:#fff;border:1px solid;border-color:#808080 #fff #fff #808080;box-shadow:inset 1px 1px #000;display:flex;align-items:center;overflow:hidden}
+.c95s-caps i{width:16px;height:16px;flex:none;margin-left:-7px;image-rendering:pixelated;background:center/16px no-repeat}
+.c95s-caps em{font-style:normal;color:#808080;margin-left:-6px}
+/* active side: navy caption + bouncing arrow; inactive side: greyed like a disabled control */
+.c95s-panel.c95s-on{box-shadow:0 0 0 1px #000080}
+.c95s-panel.c95s-on .c95s-tb{background:linear-gradient(90deg,#000080,#1084d0);color:#fff}
+.c95s-panel.c95s-on .c95s-arrow{visibility:visible;animation:c95s-bob .6s steps(4) infinite}
+.c95s-panel.c95s-on.c95s-wait .c95s-glass{display:block}
+.c95s-panel.c95s-on.c95s-wait .c95s-arrow{display:none}
+.c95s-panel:not(.c95s-on) .c95s-icon{opacity:.45}
+.c95s-panel:not(.c95s-on) .c95s-body,.c95s-panel:not(.c95s-on) .c95s-capl{color:#808080;text-shadow:1px 1px #fff}
+@keyframes c95s-bob{to{background-position:-64px 0}}
+.c95s-you{position:absolute;right:-14px;top:30px;width:64px;height:32px;image-rendering:pixelated;background:url(you_badge.png) center/64px 32px no-repeat;z-index:2;pointer-events:none}
+/* middle strip: "You play: (o) WHITE" + who moves first */
+.c95s-mid{display:flex;flex-direction:column;gap:5px}
+.c95s-play{display:flex;align-items:center;gap:5px;height:24px;padding:0 6px;background:#fff;border:1px solid;border-color:#808080 #fff #fff #808080;box-shadow:inset 1px 1px #000}
+.c95s-play i{width:16px;height:16px;image-rendering:pixelated;background:center/16px no-repeat}
+.c95s-play b{letter-spacing:.5px}
+.c95s-note{display:flex;align-items:center;gap:4px;padding-left:2px}
+.c95s-ii{width:14px;height:14px;border-radius:50%;background:#fff;border:1px solid #000080;color:#000080;font:bold 10px/12px Times,serif;text-align:center;flex:none;font-style:normal}
+/* balloon tooltip toast */
+.c95s-toast{position:absolute;z-index:40;min-width:178px;max-width:240px;padding:8px 22px 9px 8px;background:#ffffe1;border:1px solid #000;border-radius:7px;box-shadow:2px 2px 0 rgba(0,0,0,.35);font:11px/1.3 "MS Sans Serif",Tahoma,Arial,sans-serif;color:#000;display:flex;gap:8px;align-items:flex-start;animation:c95s-in .18s steps(3)}
+.c95s-toast::before,.c95s-toast::after{content:"";position:absolute;left:22px;border-style:solid}
+.c95s-toast::before{bottom:-13px;border-width:13px 15px 0 0;border-color:#000 transparent transparent transparent}
+.c95s-toast::after{bottom:-11px;left:23px;border-width:11px 13px 0 0;border-color:#ffffe1 transparent transparent transparent}
+.c95s-toast.c95s-up::before{bottom:auto;top:-13px;border-width:0 15px 13px 0;border-color:transparent transparent #000 transparent}
+.c95s-toast.c95s-up::after{bottom:auto;top:-11px;border-width:0 13px 11px 0;border-color:transparent transparent #ffffe1 transparent}
+.c95s-toast i{width:32px;height:32px;flex:none;image-rendering:pixelated;background:center/32px no-repeat}
+.c95s-toast i.c95s-hg{background:url(../icons/hourglass.png) center/32px no-repeat}
+.c95s-toast b{display:block;font-size:12px;margin:1px 0 3px}
+.c95s-toast .c95s-x{position:absolute;right:5px;top:4px;width:13px;height:12px;font:bold 11px/10px Arial,sans-serif;color:#404040;text-align:center;cursor:pointer}
+.c95s-toast.c95s-bye{opacity:0;transition:opacity .25s steps(3)}
+@keyframes c95s-in{from{opacity:0}to{opacity:1}}
+/* Choose-your-side dialog */
+.c95s-veil{position:fixed;inset:0;z-index:55}
+.c95s-dlg{position:fixed;z-index:56;left:50%;top:50%;width:380px;transform:translate(-50%,-50%);background:#c0c0c0;padding:3px;border:1px solid;border-color:#dfdfdf #000 #000 #dfdfdf;box-shadow:inset 1px 1px #fff,inset -1px -1px #808080;font:11px/1.3 "MS Sans Serif",Tahoma,Arial,sans-serif;color:#000}
+.c95s-dlg .c95s-dt{height:18px;display:flex;align-items:center;padding:0 2px 0 4px;font-weight:bold;color:#fff;background:linear-gradient(90deg,#000080,#1084d0)}
+.c95s-dlg .c95s-dt span{margin-right:auto}
+.c95s-b{background:#c0c0c0;border:1px solid;border-color:#fff #000 #000 #fff;box-shadow:inset -1px -1px #808080,inset 1px 1px #dfdfdf;font:inherit;color:#000;padding:0}
+.c95s-b:active,.c95s-b.c95s-sel{border-color:#000 #fff #fff #000;box-shadow:inset 1px 1px #808080,inset -1px -1px #dfdfdf}
+.c95s-tbtn{width:16px;height:14px;margin-left:2px;font:bold 10px/10px Arial,sans-serif}
+.c95s-dbody{padding:12px 12px 10px}
+.c95s-q{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.c95s-q>i{width:32px;height:32px;flex:none;border-radius:50%;background:#fff;border:1px solid #000;color:#0000c0;font:bold 22px/30px Times,serif;text-align:center;font-style:normal}
+.c95s-picks{display:flex;gap:14px;justify-content:center;margin:4px 0 12px}
+.c95s-pick{width:132px;height:140px;padding-bottom:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;position:relative}
+.c95s-pick .c95s-big{width:96px;height:96px;image-rendering:pixelated;background:center/96px no-repeat}
+.c95s-pick b{font-size:12px}
+.c95s-pick small{font-size:10px;color:#000080}
+.c95s-pick.c95s-sel::after{content:"";position:absolute;inset:3px;border:1px dotted #000}
+.c95s-grp{border:2px groove #fff;padding:7px 8px 4px;margin:2px 0 8px;position:relative}
+.c95s-grp>.c95s-lg{position:absolute;top:-8px;left:7px;background:#c0c0c0;padding:0 3px}
+.c95s-grp label{display:inline-flex;align-items:center;gap:4px;margin:2px 14px 2px 0;cursor:pointer}
+.c95s-grp input{margin:0}
+.c95s-dbar{display:flex;justify-content:flex-end;gap:6px;margin-top:10px}
+.c95s-dbar .c95s-b{min-width:75px;height:23px}
+.c95s-dbar .c95s-def{outline:1px solid #000}
+/* board orientation: the human's pieces always at the bottom (see README) */
+.c95s-flip{transform:rotate(180deg)}
+.c95s-flip .pc,.c95s-flip .sq>span,.c95s-flip .adwin,.c95s-flip .mine,.c95s-flip .ice{transform:rotate(180deg)}

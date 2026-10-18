@@ -1,0 +1,36 @@
+/* Checkers 95 - Inspect viewer styles. Everything is scoped under .c95i-root (no global leaks). */
+.c95i-root{font-family:'MS Sans Serif',Tahoma,Geneva,sans-serif;font-size:12px;color:#000;line-height:normal;-webkit-user-select:none;user-select:none}
+.c95i-root *,.c95i-root *::before,.c95i-root *::after{box-sizing:border-box}
+.c95i-root.c95i-modal{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.001)}
+.c95i-root.c95i-modal .c95i-win{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.c95i-root.c95i-inline{position:relative;display:inline-block}
+.c95i-root .c95i-out{border:2px solid;border-color:#fff #000 #000 #fff;box-shadow:inset -1px -1px #808080,inset 1px 1px #dfdfdf;background:#c0c0c0}
+.c95i-root .c95i-in{border:2px solid;border-color:#808080 #fff #fff #808080;box-shadow:inset 1px 1px #000,inset -1px -1px #dfdfdf}
+.c95i-root .c95i-win{width:600px;padding:3px;display:flex;flex-direction:column;gap:4px}
+.c95i-root .c95i-win.c95i-flash .c95i-title{background:linear-gradient(90deg,#808080,#b5b5b5)}
+.c95i-root .c95i-title{background:linear-gradient(90deg,#000080,#1084d0);color:#fff;font-weight:bold;padding:3px 3px 3px 4px;display:flex;align-items:center;gap:4px;cursor:move}
+.c95i-root .c95i-title-ico{width:14px;height:14px;background:radial-gradient(circle at 40% 35%,#ff8080,#d00000 55%,#600000 70%,transparent 72%)}
+.c95i-root .c95i-title-txt{flex:1}
+.c95i-root .c95i-btn{font:inherit;color:#000;min-width:75px;padding:4px 10px;background:#c0c0c0;border:2px solid;border-color:#fff #000 #000 #fff;box-shadow:inset -1px -1px #808080,inset 1px 1px #dfdfdf;cursor:pointer;border-radius:0;margin:0}
+.c95i-root .c95i-btn:active{border-color:#000 #fff #fff #000;box-shadow:inset 1px 1px #808080}
+.c95i-root .c95i-btn:focus{outline:1px dotted #000;outline-offset:-5px}
+.c95i-root .c95i-tb{min-width:0;width:16px;height:14px;padding:0;font:bold 9px/10px Tahoma,sans-serif}
+.c95i-root .c95i-body{display:flex;gap:8px;padding:6px 6px 0}
+.c95i-root .c95i-left{width:178px;display:flex;flex-direction:column;gap:3px}
+.c95i-root .c95i-list{font:inherit;width:100%;height:318px;background:#fff;color:#000;padding:1px;border-radius:0;outline:none}
+.c95i-root .c95i-list optgroup{font-weight:bold;font-style:normal;background:#dfdfdf}
+.c95i-root .c95i-list option{font-weight:normal;padding:1px 4px;background:#fff}
+.c95i-root .c95i-list option:checked{background:#000080 linear-gradient(#000080,#000080);color:#fff}
+.c95i-root .c95i-right{flex:1;display:flex;flex-direction:column;gap:6px}
+.c95i-root .c95i-view{position:relative;height:292px;background:radial-gradient(ellipse at 50% 42%,#3c4656 0%,#1d222b 55%,#0b0d11 100%);overflow:hidden}
+.c95i-root .c95i-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+.c95i-root .c95i-canvas:active{cursor:grabbing}
+.c95i-root .c95i-hint{position:absolute;left:6px;bottom:4px;color:#9aa6b8;font-size:11px;pointer-events:none;text-shadow:1px 1px #000}
+.c95i-root .c95i-err{display:none;position:absolute;inset:0;color:#fff;padding:20px;text-align:center}
+.c95i-root .c95i-bar{display:flex;gap:6px;align-items:center}
+.c95i-root .c95i-chk{margin-left:auto;display:flex;align-items:center;gap:3px}
+.c95i-root .c95i-desc{margin:0 6px;padding:5px 7px;background:#fff;min-height:52px}
+.c95i-root .c95i-dname{display:block;margin-bottom:2px}
+.c95i-root .c95i-status{display:flex;gap:2px}
+.c95i-root .c95i-status>div{padding:2px 4px;flex:1}
+.c95i-root .c95i-status>.c95i-st2{flex:0 0 110px}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Inspect - Checkers 95</title>
+<link rel="icon" href="icons/favicon.ico">
+<link rel="stylesheet" href="inspect.css">
+<style>
+body{margin:0;min-height:100vh;background:#008080 url(screens/wallpaper_tile_64.png);display:flex;align-items:center;justify-content:center;font:12px Tahoma,sans-serif}
+#demo{position:fixed;left:8px;top:8px;display:flex;gap:6px}
+#demo button{font:inherit;background:#c0c0c0;border:2px solid;border-color:#fff #000 #000 #fff;padding:3px 8px;cursor:pointer}
+</style></head><body>
+<div id="app"></div>
+<div id="demo"><button id="asdlg" title="Open as a modal dialog like the game would">Open as dialog: red_king_bomb</button></div>
+<script src="inspect.js"></script>
+<script>
+// Standalone page: mount inline. URL params: ?piece=red_king&theme=icons&yaw=0.5&pitch=0.2&dist=4&t=0.4
+(function(){
+  var P=new URLSearchParams(location.search), id=P.get('piece')||'red_king', theme=P.get('theme')||'classic95';
+  var pose=(P.has('yaw')||P.has('pitch')||P.has('dist'))?{yaw:+P.get('yaw')||0,pitch:+P.get('pitch')||0,dist:+P.get('dist')||0}:null;
+  CheckersInspect.open(id,{theme:theme,container:document.getElementById('app'),sound:!P.has('mute'),pose:pose,flourish:!P.has('t')&&!pose});
+  if(P.has('t'))CheckersInspect._seek(+P.get('t'));
+  document.getElementById('asdlg').onclick=function(){CheckersInspect.close();CheckersInspect.open('red_king_bomb',{sound:true,onClose:function(){CheckersInspect.open(id,{theme:theme,container:document.getElementById('app')});}});};
+})();
+</script></body></html>
