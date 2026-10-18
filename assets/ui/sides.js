@@ -1,10 +1,14 @@
 /* Checkers95 side / turn indicator  -  window.CheckersSides
  * Drop-in, no dependencies. Images resolve relative to this script (assets/ui/).
- *   CheckersSides.mount(containerEl)        builds the two player panels (top = opponent, bottom = you)
+ *   CheckersSides.mount(containerEl[, cfg])  builds the two player panels (top = opponent, bottom = you)
+ *   CheckersSides.config({toasts:'auto'|'always'|'off', hideNote:true})   -> current config
+ *        toasts 'auto' (default): vs Computer on every turn change; two players: only on the first turn of a game
+ *   CheckersSides.setToasts(v)              v = true|'always' | false|'off' | 'auto'  -> mode
  *   CheckersSides.update(info)              refresh; returns the window-title string
  *        info = { turn:'r'|'b', human:'r'|'b'|null (null = two players), scheme:'red'|'white',
  *                 count:{r,b}, kings:{r,b}, captured:{r,b} (pieces taken BY that side),
- *                 thinking:bool, winner:'r'|'b'|null, names:{r,b} (optional), toast:true }
+ *                 thinking:bool, winner:'r'|'b'|null, names:{r,b} (optional), toast:true,
+ *                 turnNo:0.. (optional; 0 = game just started; hides the "Black moves first" note once > 0) }
  *   CheckersSides.toast(title, text, {icon:'r'|'w'|'b'|'hourglass', anchor:el, below:false, ms:2200 (0 = sticky)})
  *   CheckersSides.chooseSide({side:'r'|'b', scheme:'red'|'white', onOK(side, scheme), onCancel()})
  *   CheckersSides.titleText(info)           'Checkers - You are White - Your turn'
@@ -25,13 +29,18 @@
     return { b: 'Player 1', r: 'Player 2' };            // Black moves first, so Black is Player 1
   }
   var root = null, P = {}, last = {};
+  var CFG = { toasts: 'auto', hideNote: true };
+  function normToasts(v) { return v === false || v === 'off' ? 'off' : (v === true || v === 'always') ? 'always' : 'auto'; }
+  function config(o) { o = o || {}; if ('toasts' in o) CFG.toasts = normToasts(o.toasts); if ('hideNote' in o) CFG.hideNote = !!o.hideNote; return { toasts: CFG.toasts, hideNote: CFG.hideNote }; }
+  function setToasts(v) { CFG.toasts = normToasts(v); if (CFG.toasts === 'off' && tst) { tst.remove(); tst = null; } return CFG.toasts; }
   function panel() {
     return el('div', 'c95s-panel',
       '<div class="c95s-tb"><i class="c95s-arrow"></i><i class="c95s-glass"></i><span class="c95s-tn"></span><span class="c95s-st"></span></div>' +
       '<div class="c95s-body"><i class="c95s-icon"></i><div><div class="c95s-name"></div><div class="c95s-sub"></div></div></div>' +
       '<div class="c95s-capl">Captured:</div><div class="c95s-caps"></div>');
   }
-  function mount(container) {
+  function mount(container, opts) {
+    if (opts) config(opts);
     root = el('div', 'c95s-side');
     P.top = panel(); P.bot = panel();
     P.mid = el('div', 'c95s-mid', '<div class="c95s-play">You play: <i></i><b></b></div><div class="c95s-note"><i class="c95s-ii">i</i><span>Black moves first.</span></div>');
@@ -74,8 +83,16 @@
     var pl = P.mid.querySelector('.c95s-play');
     pl.style.display = info.human ? '' : 'none';
     if (info.human) { pl.querySelector('i').style.backgroundImage = url('mini_' + file(info.human, info.scheme) + '_16.png'); pl.querySelector('b').textContent = colorName(info.human, info.scheme).toUpperCase(); }
+    // "(i) Black moves first" only matters before the first move
+    var started = info.turnNo != null ? info.turnNo > 0 : (last.key !== undefined && last.key !== info.turn + '|' + info.human + '|' + info.winner) || last.started;
+    last.started = started;
+    P.mid.querySelector('.c95s-note').style.display = CFG.hideNote && started ? 'none' : '';
     var key = info.turn + '|' + info.human + '|' + info.winner;
-    if (info.toast !== false && !info.winner && last.key !== undefined && key !== last.key) {
+    var fresh = info.turnNo === 0 && last.turnNo !== 0;              // a new game just started
+    var want = CFG.toasts === 'always' || (CFG.toasts === 'auto' && (info.human ? true : (info.turnNo != null ? info.turnNo === 0 : !last.hotShown)));
+    last.turnNo = info.turnNo;
+    if (CFG.toasts !== 'off' && want && info.toast !== false && !info.winner && (fresh || (last.key !== undefined && key !== last.key))) {
+      if (!info.human) last.hotShown = true;
       var comp = info.human && info.turn !== info.human, anchor = info.turn === bottom ? P.bot : P.top, below = anchor === P.top;
       if (comp) toast('Computer\u2019s turn...', 'Thinking, please wait.', { icon: 'hourglass', anchor: anchor, below: below });
       else if (info.human) toast('Your turn!', 'You play ' + colorName(info.human, info.scheme).toUpperCase() + '. Make your move.', { icon: file(info.turn, info.scheme), anchor: anchor, below: below });
@@ -97,10 +114,15 @@
     document.body.appendChild(tst);
     var a = o.anchor, r = a ? a.getBoundingClientRect() : { left: 20, top: 120, bottom: 120 };
     var sx = window.scrollX || 0, sy = window.scrollY || 0, h = tst.offsetHeight;
-    var up = !!a && (o.below || r.top - h - 16 < 0);     // below the anchor (tail up) when asked or no room above
+    // never cover the "You play / Black moves first" strip: slide past it if it is in the way
+    var top = r.top - h - 14, below = r.bottom + 14, strip = [];
+    if (a && P.mid) [].forEach.call(P.mid.children, function (c) { if (c.offsetParent) { var cr = c.getBoundingClientRect(); if (cr.height) strip.push(cr); } });
+    var up = !!a && !!o.below;
+    if (!up) { strip.forEach(function (cr) { if (cr.bottom > top && cr.top < r.top) top = Math.min(top, cr.top - h - 14); }); if (a && top < 0) up = true; }
+    if (up) strip.forEach(function (cr) { if (cr.top < below + h && cr.bottom > r.bottom) below = Math.max(below, cr.bottom + 14); });
     tst.classList.toggle('c95s-up', up);
     tst.style.left = (r.left + sx + 8) + 'px';
-    tst.style.top = (up ? r.bottom + sy + 14 : r.top + sy - h - 14) + 'px';
+    tst.style.top = ((up ? below : top) + sy) + 'px';
     var me = tst;
     function hide() { if (tst !== me) return; tst = null; me.classList.add('c95s-bye'); setTimeout(function () { me.remove(); }, 260); }
     x.onclick = hide;
@@ -135,5 +157,5 @@
     return d;
   }
   function flip(e, on) { if (e) e.classList.toggle('c95s-flip', !!on); }
-  window.CheckersSides = { mount: mount, update: update, toast: toast, chooseSide: chooseSide, titleText: titleText, flip: flip, colorName: colorName, base: BASE };
+  window.CheckersSides = { config: config, setToasts: setToasts, mount: mount, update: update, toast: toast, chooseSide: chooseSide, titleText: titleText, flip: flip, colorName: colorName, base: BASE };
 })();

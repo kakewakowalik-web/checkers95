@@ -25,7 +25,7 @@
 @keyframes c95s-bob{to{background-position:-64px 0}}
 .c95s-you{position:absolute;right:-14px;top:30px;width:64px;height:32px;image-rendering:pixelated;background:url(you_badge.png) center/64px 32px no-repeat;z-index:2;pointer-events:none}
 /* middle strip: "You play: (o) WHITE" + who moves first */
-.c95s-mid{display:flex;flex-direction:column;gap:5px}
+.c95s-mid{display:flex;flex-direction:column;gap:5px;margin-bottom:auto}   /* sits under the top panel; the free space above your panel is where the balloon goes */
 .c95s-play{display:flex;align-items:center;gap:5px;height:24px;padding:0 6px;background:#fff;border:1px solid;border-color:#808080 #fff #fff #808080;box-shadow:inset 1px 1px #000}
 .c95s-play i{width:16px;height:16px;image-rendering:pixelated;background:center/16px no-repeat}
 .c95s-play b{letter-spacing:.5px}

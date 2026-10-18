@@ -170,6 +170,13 @@ Problem: in the current game it is not obvious which colour you play or whose tu
    * The **inactive** panel uses a grey caption, a 45% opacity icon and disabled-style embossed grey text.
 2. A "YOU" sticker sits on your panel. Between the panels: `You play: (o) WHITE` and "(i) Black moves first."
 3. A turn-change **balloon toast** ("Your turn!" / "Computer's turn..." with an hourglass) points at the active panel. It disappears after 2.2 s.
+   * The "You play" strip sits right under the top panel, so the "Your turn!" balloon goes in the free space above your panel. The placement code also slides the balloon past the strip, so it never covers it.
+   * "(i) Black moves first" hides itself once the game has started (`info.turnNo > 0`; turn this off with `config({hideNote:false})`).
+   * Toast modes: `CheckersSides.config({toasts:'auto'|'always'|'off'})` or `CheckersSides.setToasts(true|false|'auto')`.
+     * `'auto'` (default) shows a toast on every turn change vs the Computer, but in two-player mode only on the first turn of a game.
+     * `'always'` shows one on every turn change.
+     * `'off'` never shows one.
+     * `update({toast:false})` still suppresses a single update.
 4. The **Choose your side** dialog has two big piece buttons (Red-or-White / Black, with "moves second" / "moves first"), a Colour scheme group (Red vs Black / White vs Black), a "Black moves first" note, and OK/Cancel.
    * Keys: Enter/Esc, arrow keys switch sides, and double-clicking a piece confirms.
 5. **Orientation: the human's pieces are always at the bottom.** In `create()` Red/White already starts at the bottom (rows 5-7), so **flip the board only when the human plays Black** (the computer plays Red/White).
@@ -186,7 +193,7 @@ Problem: in the current game it is not obvious which colour you play or whose tu
 // 1) layout: put the sidebar next to the board (once, at startup) and widen the window
 var row=document.createElement('div');row.style.cssText='display:flex;gap:10px;width:100%';
 var box=document.querySelector('#body > .in');box.parentNode.insertBefore(row,box);row.appendChild(box);
-CheckersSides.mount(row);            // CSS: #main{left:calc(50% - 372px);width:744px} .c95s-side{justify-content:space-between}
+CheckersSides.mount(row,{toasts:'auto'});   // CSS: #main{left:calc(50% - 372px);width:744px} .c95s-side{justify-content:space-between}
 
 // 2) colour scheme: keep the internal code 'r', only swap art + names
 var SCHEME=opts.scheme||'red';       // 'red' | 'white'
@@ -201,7 +208,7 @@ var human=aiColor?C.opp(aiColor):null;
 var title=CheckersSides.update({turn:state.turn,human:human,scheme:SCHEME,
   count:{r:C.count(state,'r'),b:C.count(state,'b')},kings:k,
   captured:{r:12-C.count(state,'b'),b:12-C.count(state,'r')},     // pieces taken BY each side
-  thinking:state.turn===aiColor,winner:state.winner});
+  thinking:state.turn===aiColor,winner:state.winner,turnNo:state.turnNo});
 document.querySelector('#dragbar span').textContent='\u25a0 '+title; document.title=title;
 CheckersSides.flip($('wrap'), human==='b');                          // human always at the bottom
 
@@ -217,7 +224,9 @@ Flip notes:
   `el.style.transform='translate(...)'+($('wrap').classList.contains('c95s-flip')?' rotate(180deg)':'')`.
 
 API summary:
-* `mount(el)`
+* `mount(el[, {toasts, hideNote}])`
+* `config({toasts:'auto'|'always'|'off', hideNote:true})` returns the current config.
+* `setToasts(true|'always' | false|'off' | 'auto')` returns the mode.
 * `update(info)` returns the title string.
 * `toast(title,text,{icon:'r'|'w'|'b'|'hourglass',anchor,below,ms})`
 * `chooseSide({side,scheme,onOK,onCancel})`
@@ -285,8 +294,10 @@ CheckersInspect.close();
 
 | API | Description |
 |---|---|
-| `open(pieceId[, opts])` -> `true/false` | Opens (or retargets) the modal dialog. `pieceId` must match `^(red|black)_(man|king)(_(shield|bomb|speed|ghost|freeze))?$`. A bad id **returns `false` and logs a warning** (it does not throw). |
+| `open(pieceId[, opts])` -> `true/false` | Opens (or retargets) the modal dialog. `pieceId` must match `^(red|white|black)_(man|king)(_(shield|bomb|speed|ghost|freeze))?$`. A bad id **returns `false` and logs a warning** (it does not throw). |
 | `opts.theme` | `'classic95'` (default; `window.CHECKERS95_INSPECT_THEME` overrides the default) / `'icons'` / `'pixel-gems'` / `'smiley'`. It also applies to power ids: `open('red_king_bomb',{theme:'smiley'})` shows the smiley-body bomb king. |
+| `opts.scheme` | `'red'` / `'white'`: the listbox hides the other colour's entries. Red and white ids follow the scheme, so `open('red_man',{scheme:'white'})` shows `white_man`, which means the game can keep passing its internal `red_*` ids. The default is `window.CHECKERS95_SCHEME`; if neither is set, both colours are listed. |
+| `setScheme('red'\|'white'\|null)`, `getScheme()` | Change the scheme at any time (`null` = list both). An open red/white piece switches to the new colour. |
 | `opts.sound` | `true` plays `audio/teleport.ogg` on the flourish (default `false`, so the game controls sound) |
 | `opts.flourish` | `false` skips the automatic intro flourish when opening |
 | `opts.container` | A DOM element: mounts inline instead of as a modal overlay (used by `inspect.html`) |
@@ -995,8 +1006,8 @@ Screenshots: `inspect_screenshot.png`, `inspect_angles.png`, `inspect_flourish.g
 | `ui/side_white_32@2x.png` | 64x64 | 2x (nearest-neighbour) of `side_white_32.png` |
 | `ui/side_white_48.png` | 48x48 | Side icon white 48px |
 | `ui/side_white_48@2x.png` | 96x96 | 2x (nearest-neighbour) of `side_white_48.png` |
-| `ui/sides.css` | 6 KB | Styles for sides.js (all classes prefixed c95s-) |
-| `ui/sides.js` | 10 KB | CheckersSides module: player panels, turn arrow, YOU badge, toast, Choose-side dialog, title text, board flip |
+| `ui/sides.css` | 7 KB | Styles for sides.js (all classes prefixed c95s-) |
+| `ui/sides.js` | 12 KB | CheckersSides module: player panels, turn arrow, YOU badge, toast, Choose-side dialog, title text, board flip |
 | `ui/turn_arrow_left_0.png` | 16x16 | Turn arrow frame 0 |
 | `ui/turn_arrow_left_1.png` | 16x16 | Turn arrow frame 1 |
 | `ui/turn_arrow_left_2.png` | 16x16 | Turn arrow frame 2 |
@@ -1019,7 +1030,7 @@ Screenshots: `inspect_screenshot.png`, `inspect_angles.png`, `inspect_flourish.g
 | `ui/you_play_white@2x.png` | 300x48 | 2x (nearest-neighbour) of `you_play_white.png` |
 | `inspect.css` | 3 KB | Inspect styles (all scoped under .c95i-root) |
 | `inspect.html` | 1 KB | Standalone Inspect demo page |
-| `inspect.js` | 444 KB | 3D Inspect viewer module (piece art embedded) |
+| `inspect.js` | 445 KB | 3D Inspect viewer module (piece art embedded) |
 | `inspect_angles.png` | 1178x290 | 3 inspect angles |
 | `inspect_flourish.gif` | 312x232, 24 frames | Inspect flourish animation |
 | `inspect_flourish.mp4` | 2.40 s | Same as MP4 |

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en"><head><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 fill=%22%23c0c0c0%22/%3E%3Crect x=%221%22 y=%221%22 width=%2214%22 height=%223%22 fill=%22%23000080%22/%3E%3Ccircle cx=%225%22 cy=%2210%22 r=%223%22 fill=%22%23c00%22/%3E%3Ccircle cx=%2211%22 cy=%2210%22 r=%223%22 fill=%22%23111%22/%3E%3C/svg%3E"><meta charset="utf-8"><title>Checkers</title>
+<html lang="en"><head><meta charset="utf-8"><title>Checkers</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 fill=%27%23008080%27/%3E%3Ccircle cx=%275%27 cy=%275%27 r=%273.5%27 fill=%27%23d00000%27 stroke=%27%23000%27/%3E%3Ccircle cx=%2711%27 cy=%2711%27 r=%273.5%27 fill=%27%23222%27 stroke=%27%23fff%27/%3E%3C/svg%3E">
 <script>window.CHECKERS95_MANIFEST=null;</script><script src="assets/manifest.js"></script>
 <link rel="stylesheet" href="assets/ui/sides.css"><script src="assets/ui/sides.js"></script>
 <style>
@@ -383,7 +384,10 @@ function assetURL(p){return ASSETS.base+p;}
     var c64=opts.pstyle==='c64';
     ASSETS.powerPiece=c64?'pieces/powers/c64/{id}.png':(t==='classic95'?'pieces/powers/{id}.png':'pieces/powers/'+t+'/{id}.png');
     ASSETS.overlays=c64?ASSETS.overlaysC64:ASSETS.overlaysDefault;
-    window.CHECKERS95_INSPECT_THEME=t;relabel();}
+    window.CHECKERS95_INSPECT_THEME=t;window.CHECKERS95_SCHEME=SCHEME;
+    if(window.CheckersInspect&&CheckersInspect.setScheme)try{CheckersInspect.setScheme(SCHEME);}catch(e){}
+    if(window.CheckersSides&&CheckersSides.config)try{CheckersSides.config({toasts:opts.toasts||'auto'});}catch(e){}
+    relabel();}
   function relabel(){var n=NAME.r;var el=document.querySelector('[data-act="ai:r"]');if(el)el.textContent='Computer plays '+n;
     var o=document.querySelector('#aisel option[value=r]');if(o)o.textContent=n;var bl=document.getElementById('binr');if(bl)bl.parentNode.firstChild.textContent=n+' bin: ';}
   var assetStyle=null,assetNoted=false;
@@ -534,7 +538,7 @@ function assetURL(p){return ASSETS.base+p;}
   }
   function sidesUpdate(){var k={r:0,b:0};state.board.forEach(function(rw){rw.forEach(function(p){if(p&&p.k)k[p.c]++;});});
     var human=aiColor?C.opp(aiColor):null,info={turn:state.turn,human:human,scheme:SCHEME,count:{r:C.count(state,'r'),b:C.count(state,'b')},kings:k,
-      captured:{r:12-C.count(state,'b'),b:12-C.count(state,'r')},thinking:state.turn===aiColor&&!state.winner,winner:state.winner,toast:state.phase==='play'};
+      captured:{r:12-C.count(state,'b'),b:12-C.count(state,'r')},thinking:state.turn===aiColor&&!state.winner,winner:state.winner,toast:state.phase==='play',turnNo:state.turnNo};
     var title;if(window.CheckersSides){title=CheckersSides.update(info);CheckersSides.flip($('wrap'),human==='b');}
     else title='Checkers'+(human?' - You are '+NAME[human]+(state.winner?(state.winner===human?' - You win!':' - Computer wins'):(state.turn===human?' - Your turn':' - Computer\u2019s turn')):' - '+NAME[state.turn]+' to move');
     $('dragbar').querySelector('span').textContent='\u25a0 '+title;document.title=title;}
@@ -641,7 +645,7 @@ function assetURL(p){return ASSETS.base+p;}
   function parseId(id){var a=id.split('_');return {c:a[0]==='black'?'b':'r',k:a[1]==='king',pw:a[2]||null};}
   function discHTML(id,cls){var q=parseId(id);return '<div class="pc '+q.c+(q.k?' k':'')+(q.pw?' pw pw-'+q.pw:'')+' '+(cls||'')+'">'+(q.pw?'<div class="emb"></div>':'')+'</div>';}
   function inspect(id){
-    if(window.CheckersInspect&&typeof window.CheckersInspect.open==='function'){try{if(window.CheckersInspect.open(id,{theme:(opts.pstyle==='c64'&&/_(shield|bomb|speed|ghost|freeze)$/.test(id))?'c64':(opts.theme||'classic95'),sound:soundOn})!==false)return;}catch(e){console.warn('CheckersInspect failed, using fallback',e);}}
+    if(window.CheckersInspect&&typeof window.CheckersInspect.open==='function'){try{if(window.CheckersInspect.open(id,{theme:(opts.pstyle==='c64'&&/_(shield|bomb|speed|ghost|freeze)$/.test(id))?'c64':(opts.theme||'classic95'),sound:soundOn,scheme:SCHEME})!==false)return;}catch(e){console.warn('CheckersInspect failed, using fallback',e);}}
     var q=parseId(id),wrap=document.createElement('div');wrap.className='inspect';
     var layers='';for(var i=0;i<10;i++)layers+='<div class="edge '+q.c+'" style="transform:translateZ('+(i-5)+'px)"></div>';
     wrap.innerHTML='<div class="stage in"><div class="disc">'+layers+'<div class="face front" style="transform:translateZ(6px)">'+discHTML(id,'big')+'</div><div class="face back" style="transform:rotateY(180deg) translateZ(6px)">'+discHTML(id.replace('_king','_man').replace(/_(shield|bomb|speed|ghost|freeze)$/,''),'big')+'</div></div></div>'+
@@ -687,10 +691,11 @@ function assetURL(p){return ASSETS.base+p;}
       '</fieldset><fieldset class="grp"><legend>Piece theme</legend>'+ASSETS.themes.map(function(t){return '<label class="th"><input type="radio" name="theme" value="'+t+'"'+((opts.theme||'classic95')===t?' checked':'')+'> '+t+'</label>';}).join('')+
       '</fieldset><fieldset class="grp"><legend>Colour scheme</legend><label class="th"><input type="radio" name="scheme" value="red"'+(opts.scheme!=='white'?' checked':'')+'> Red vs Black</label><label class="th"><input type="radio" name="scheme" value="white"'+(opts.scheme==='white'?' checked':'')+'> White vs Black</label></fieldset>'+
       '<fieldset class="grp"><legend>Power style</legend><label class="th"><input type="radio" name="pstyle" value="default"'+(opts.pstyle!=='c64'?' checked':'')+'> Default (follows piece theme)</label><label class="th"><input type="radio" name="pstyle" value="c64"'+(opts.pstyle==='c64'?' checked':'')+'> Commodore 64</label></fieldset>'+
+      '<fieldset class="grp"><legend>Turn balloons</legend>'+[['auto','Auto'],['always','Always'],['off','Off']].map(function(t){return '<label class="th"><input type="radio" name="toasts" value="'+t[0]+'"'+((opts.toasts||'auto')===t[0]?' checked':'')+'> '+t[1]+'</label>';}).join('')+'</fieldset>'+
       '<div class="note">Twist changes start a new game; looks apply right away.</div>';
     dialog('Options',d,[['OK',function(){var changed=false;d.querySelectorAll('input[data-k]').forEach(function(i){if(!!opts[i.dataset.k]!==i.checked)changed=true;opts[i.dataset.k]=i.checked;});
       var th=d.querySelector('input[name=theme]:checked');opts.theme=th?th.value:'classic95';
-      opts.scheme=d.querySelector('input[name=scheme]:checked').value;opts.pstyle=d.querySelector('input[name=pstyle]:checked').value;saveOpts();setPieceTheme(opts.theme);applyAssets();if(changed)setTimeout(newGame,0);else render();}],['Cancel']],{wide:true});}
+      opts.scheme=d.querySelector('input[name=scheme]:checked').value;opts.pstyle=d.querySelector('input[name=pstyle]:checked').value;opts.toasts=d.querySelector('input[name=toasts]:checked').value;saveOpts();setPieceTheme(opts.theme);applyAssets();if(changed)setTimeout(newGame,0);else render();}],['Cancel']],{wide:true});}
   /* --- menus / controls --- */
   function setAI(c){aiColor=c||null;$('aisel').value=c||'';syncMenu();sel=null;hint=null;clearTimeout(aiTimer);
     if(state.phase==='setup'){newGame();return;}render();if(!busy)maybeAI();}
@@ -725,7 +730,7 @@ function assetURL(p){return ASSETS.base+p;}
   document.addEventListener('mouseup',function(){drag=null;});
   function tick(){var d=new Date();$('clock').textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});}
   setInterval(tick,10000);tick();if(window.CheckersSides){var row=document.createElement('div');row.className='siderow';row.style.cssText='display:flex;gap:10px;width:100%';
-    var box=document.querySelector('#body > .in');box.parentNode.insertBefore(row,box);row.appendChild(box);CheckersSides.mount(row);}
+    var box=document.querySelector('#body > .in');box.parentNode.insertBefore(row,box);row.appendChild(box);CheckersSides.mount(row,{toasts:opts.toasts||'auto'});}
   setPieceTheme(opts.theme);applyAssets();syncMenu();document.addEventListener('click',function once(){snd('startup');document.removeEventListener('click',once,true);},true);
   /* test/screenshot hook */
   window.Game={get state(){return state;},newGameAsk:function(){newGameAsk();},isFlipped:function(){return isFlipped();},set state(s){clearTimeout(aiTimer);state=s;sel=null;hint=null;mode=null;clip=null;render();maybeAI();},render:render,actions:actions,doMove:doMove,explode:explode,crashFx:crashFx,

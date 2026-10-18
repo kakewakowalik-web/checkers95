@@ -61,7 +61,6 @@ window.CHECKERS95_MANIFEST=[
  "inspect.css",
  "inspect.html",
  "inspect.js",
- "make-manifest.cjs",
  "overlays/c64/frozen.png",
  "overlays/c64/frozen.svg",
  "overlays/c64/frozen@2x.png",

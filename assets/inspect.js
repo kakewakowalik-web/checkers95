@@ -1,5 +1,6 @@
 /*! Checkers 95 - Inspect viewer (CS2-style piece inspect). Self-contained, offline, raw WebGL, no dependencies.
  *  API:  CheckersInspect.open(pieceId[, {theme, sound, flourish, container, onClose}])  ->  true | false
+ *        opts.scheme: 'red' | 'white'  (listbox hides the other colour; also CheckersInspect.setScheme(s) / getScheme(); window.CHECKERS95_SCHEME = default)
  *        CheckersInspect.close();  CheckersInspect.isOpen();  CheckersInspect.list();  CheckersInspect.parseId(id)
  *  pieceId: '<red|white|black>_<man|king>' or '<red|black>_<man|king>_<shield|bomb|speed|ghost|freeze>'
  *  All DOM classes are prefixed "c95i-". Piece art is embedded (data URIs), so it also works from file://.
@@ -456,6 +457,16 @@
 
   /* ---------------- UI ---------------- */
   var ui = null;   // singleton
+  var SCHEME = null; // 'red' | 'white' | null (= list both)
+  function normScheme(s) { return s === 'red' || s === 'white' ? s : null; }
+  function applyScheme() {           // hide the red OR white entries of the listbox, whichever is not in use
+    if (!ui) return;
+    var hide = SCHEME === 'white' ? 'red_' : SCHEME === 'red' ? 'white_' : null;
+    Array.prototype.forEach.call(ui.sel.options, function (o) {
+      var off = !!hide && o.value.split('|')[1].indexOf(hide) === 0;
+      o.hidden = off; o.style.display = off ? 'none' : '';
+    });
+  }
   function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
   function loadImg(src) { return new Promise(function (res, rej) { var i = new Image(); i.onload = function () { res(i); }; i.onerror = rej; i.src = src; }); }
 
@@ -606,6 +617,10 @@
       if (opts.theme && POWER_THEMES.indexOf(opts.theme) < 0) { if (global.console) console.warn('CheckersInspect.open: unknown theme "' + opts.theme + '", using classic95'); }
       if (!ui) ui = buildUI();
       ui.opts = opts;
+      if (opts.scheme !== undefined) SCHEME = normScheme(opts.scheme);
+      else if (SCHEME === null) SCHEME = normScheme(global.CHECKERS95_SCHEME);
+      if (SCHEME && p.color !== 'black' && p.color !== SCHEME) p = parseId(p.id.replace(/^(red|white)_/, SCHEME + '_'));   // game's internal 'red' ids follow the scheme
+      applyScheme();
       var host = opts.container || document.body;
       ui.root.classList.toggle('c95i-modal', !opts.container);
       ui.root.classList.toggle('c95i-inline', !!opts.container);
@@ -628,6 +643,15 @@
       var cb = ui.opts && ui.opts.onClose; if (typeof cb === 'function') cb();
     },
     isOpen: function () { return !!(ui && ui.open); },
+    setScheme: function (s) {           // 'red' | 'white' | null (both); retargets an open red/white piece to the new colour
+      SCHEME = normScheme(s); applyScheme();
+      if (ui && ui.open && SCHEME && ui.current) {
+        var p = parseId(ui.current.id);
+        if (p && p.color !== 'black' && p.color !== SCHEME) show(ui.current.id.replace(/^(red|white)_/, SCHEME + '_'), ui.current.theme);
+      }
+      return SCHEME;
+    },
+    getScheme: function () { return SCHEME; },
     inspect: function () { flourish(); },
     _seek: function (t) { if (!ui) return; ui.anim = null; ui.q = flourishPose(t); ui.lastInput = 1e15; }   // for screenshots/tests
   };
